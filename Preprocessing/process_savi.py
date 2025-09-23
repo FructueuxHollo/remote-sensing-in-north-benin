@@ -8,7 +8,7 @@ import random
 
 
 # --- CONFIGURATION ---
-SAVI_ROOT = Path(r"D:\Fructueux\Work\Memoire\Computer Vision\Material\Dataset\Originals\SAVI_TEST")
+SAVI_ROOT = Path(r"D:\Fructueux\Work\Memoire\Computer Vision\Material\Dataset\Originals\SAVI")
 OUTPUT_ROOT = Path(r"D:\Fructueux\Work\Memoire\Computer Vision\Material\Dataset\Tiled")
 TILE_SIZES = [(640, 640), (1024, 1024)]
 OVERLAP_RATIO = 0.25
@@ -16,6 +16,16 @@ IOU_THRESHOLD = 0.25
 
 # NOUVEAU: Ratio désiré d'images de fond dans le dataset final
 TARGET_BACKGROUND_RATIO = 0.15
+
+# Convention CVAT: Person(0), Car(1), Bicycle(2), Cattle(3 et 4)
+# Convention Finale: Person(0), Bicycle(1), Car(2), Cattle(3)
+SAVI_CLASS_MAPPING = {
+    0: 0,  # Person -> Person
+    1: 2,  # Car (CVAT) -> Car (Final)
+    2: 1,  # Bicycle (CVAT) -> Bicycle (Final)
+    3: 3,  # Cattle (CVAT) -> Cattle (Final)
+    4: 3   # Cattle (CVAT) -> Cattle (Final)
+}
 
 # --- FONCTIONS UTILITAIRES ---
 def parse_metadata(file_path):
@@ -84,7 +94,7 @@ def process_savi_dataset():
                             if (tile_bbox[2] - tile_bbox[0]) < tile_w * 0.5 or (tile_bbox[3] - tile_bbox[1]) < tile_h * 0.5: continue
 
                             new_annotations_yolo = []
-                            for class_id, obj_x_min, obj_y_min, obj_x_max, obj_y_max in original_bboxes_pixel:
+                            for class_id_from_file, obj_x_min, obj_y_min, obj_x_max, obj_y_max in original_bboxes_pixel:
                                 inter_x_min, inter_y_min = max(obj_x_min, tile_bbox[0]), max(obj_y_min, tile_bbox[1])
                                 inter_x_max, inter_y_max = min(obj_x_max, tile_bbox[2]), min(obj_y_max, tile_bbox[3])
                                 inter_w, inter_h = inter_x_max - inter_x_min, inter_y_max - inter_y_min
@@ -92,10 +102,12 @@ def process_savi_dataset():
                                 if inter_w > 0 and inter_h > 0:
                                     original_area = (obj_x_max - obj_x_min) * (obj_y_max - obj_y_min)
                                     if original_area > 0 and ((inter_w * inter_h) / original_area) > IOU_THRESHOLD:
+                                        if class_id_from_file in SAVI_CLASS_MAPPING:
+                                            final_class_id = SAVI_CLASS_MAPPING[class_id_from_file]
                                         new_x_c = ((inter_x_min - tile_bbox[0]) + inter_w / 2) / (tile_bbox[2] - tile_bbox[0])
                                         new_y_c = ((inter_y_min - tile_bbox[1]) + inter_h / 2) / (tile_bbox[3] - tile_bbox[1])
                                         new_w, new_h = inter_w / (tile_bbox[2] - tile_bbox[0]), inter_h / (tile_bbox[3] - tile_bbox[1])
-                                        new_annotations_yolo.append(f"{class_id} {new_x_c:.6f} {new_y_c:.6f} {new_w:.6f} {new_h:.6f}")
+                                        new_annotations_yolo.append(f"{final_class_id} {new_x_c:.6f} {new_y_c:.6f} {new_w:.6f} {new_h:.6f}")
                             
                             tile_info = {
                                 "original_path": image_path,

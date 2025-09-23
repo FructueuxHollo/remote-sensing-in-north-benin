@@ -82,6 +82,42 @@ def process_and_copy_files(file_list, source_prefix, dest_img_dir, dest_lbl_dir,
         
         all_metadata_rows.append(row)
 
+def process_and_copy_savi_files(file_list, source_prefix, dest_img_dir, dest_lbl_dir, all_metadata_rows, savi_metadata_df=None):
+    """Copie les fichiers, les renomme et génère/récupère les métadonnées."""
+    for source_img_path in tqdm(file_list, desc=f"Processing {source_prefix}"):
+        original_stem = source_img_path.stem
+        new_stem = original_stem
+        
+        # Copier l'image et le label
+        source_lbl_path = source_img_path.parent / "labels" / f"{original_stem}.txt"
+        dest_img_path = dest_img_dir / f"{new_stem}.jpg"
+        dest_lbl_path = dest_lbl_dir / f"{new_stem}.txt"
+        
+        shutil.copy2(source_img_path, dest_img_path)
+        if source_lbl_path.exists():
+            shutil.copy2(source_lbl_path, dest_lbl_path)
+        else: # Créer un fichier label vide si aucun n'existe
+            dest_lbl_path.touch()
+
+        # Générer/Récupérer les métadonnées
+        row = {'id': new_stem}
+        if source_prefix == "SAVI":
+            meta = savi_metadata_df[savi_metadata_df['id'] == original_stem]
+            if not meta.empty:
+                row.update(meta.iloc[0].to_dict())
+        else:
+            if source_prefix == "HIT-UAV":
+                parsed_meta = parse_hit_uav_filename(original_stem)
+                if parsed_meta:
+                    row.update(parsed_meta)
+                row.update({'region': 'urban', 'mode': 'semi-automatique', 'y_start': 0, 'y_end': 512})
+            elif source_prefix == "POP":
+                with Image.open(source_img_path) as img:
+                    _, img_h = img.size
+                row.update({'angle': 0, 'altitude': 50, 'meteo': 'cloudy', 'region': 'urban periphery', 'mode': 'semi-automatique', 'y_start': 0, 'y_end': img_h})
+        
+        all_metadata_rows.append(row)
+
 # --- SCRIPT PRINCIPAL ---
 
 def create_final_dataset_b():
@@ -139,7 +175,7 @@ def create_final_dataset_b():
         print("\n--- Assemblage du TRAIN set ---")
         dest_train_img = final_output_dir / "images" / "train"
         dest_train_lbl = final_output_dir / "labels" / "train"
-        process_and_copy_files(savi_train_files, "SAVI", dest_train_img, dest_train_lbl, all_metadata, savi_train_metadata_df)
+        process_and_copy_savi_files(savi_train_files, "SAVI", dest_train_img, dest_train_lbl, all_metadata, savi_train_metadata_df)
         process_and_copy_files(hit_uav_train_files, "HIT-UAV", dest_train_img, dest_train_lbl, all_metadata)
         process_and_copy_files(pop_train_files, "POP", dest_train_img, dest_train_lbl, all_metadata)
 
@@ -147,7 +183,7 @@ def create_final_dataset_b():
         print("\n--- Assemblage du VAL set ---")
         dest_val_img = final_output_dir / "images" / "val"
         dest_val_lbl = final_output_dir / "labels" / "val"
-        process_and_copy_files(savi_val_files, "SAVI", dest_val_img, dest_val_lbl, all_metadata, savi_train_metadata_df)
+        process_and_copy_savi_files(savi_val_files, "SAVI", dest_val_img, dest_val_lbl, all_metadata, savi_train_metadata_df)
         process_and_copy_files(hit_uav_val_files, "HIT-UAV", dest_val_img, dest_val_lbl, all_metadata)
         process_and_copy_files(pop_val_files, "POP", dest_val_img, dest_val_lbl, all_metadata)
         
@@ -155,7 +191,7 @@ def create_final_dataset_b():
         print("\n--- Assemblage du TEST set ---")
         dest_test_img = final_output_dir / "images" / "test"
         dest_test_lbl = final_output_dir / "labels" / "test"
-        process_and_copy_files(savi_test_files, "SAVI", dest_test_img, dest_test_lbl, all_metadata, savi_test_metadata_df)
+        process_and_copy_savi_files(savi_test_files, "SAVI", dest_test_img, dest_test_lbl, all_metadata, savi_test_metadata_df)
         process_and_copy_files(hit_uav_test_files, "HIT-UAV", dest_test_img, dest_test_lbl, all_metadata)
         process_and_copy_files(pop_test_files, "POP", dest_test_img, dest_test_lbl, all_metadata)
         
