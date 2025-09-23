@@ -3,4 +3,6 @@ convert_pop.py
 convert_visdrone.py
 convert_to_3_channel.py
 tiling_jobs.py
-process_savi.py
+process_savi.py (on train)
+process_savi.py (on test)
+create_dataset_b.py
