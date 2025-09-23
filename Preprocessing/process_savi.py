@@ -8,7 +8,7 @@ import random
 
 
 # --- CONFIGURATION ---
-SAVI_ROOT = Path(r"D:\Fructueux\Work\Memoire\Computer Vision\Material\Dataset\Originals\SAVI")
+SAVI_ROOT = Path(r"D:\Fructueux\Work\Memoire\Computer Vision\Material\Dataset\Originals\SAVI_TEST")
 OUTPUT_ROOT = Path(r"D:\Fructueux\Work\Memoire\Computer Vision\Material\Dataset\Tiled")
 TILE_SIZES = [(640, 640), (1024, 1024)]
 OVERLAP_RATIO = 0.25

@@ -89,7 +89,8 @@ def process_and_copy_savi_files(file_list, source_prefix, dest_img_dir, dest_lbl
         new_stem = original_stem
         
         # Copier l'image et le label
-        source_lbl_path = source_img_path.parent / "labels" / f"{original_stem}.txt"
+        source_lbl_path = source_img_path.parent.parent / "labels" / f"{original_stem}.txt"
+        # print(f"Source label path: {source_lbl_path}")  # Debug line
         dest_img_path = dest_img_dir / f"{new_stem}.jpg"
         dest_lbl_path = dest_lbl_dir / f"{new_stem}.txt"
         
