@@ -1,0 +1,39 @@
+Introduction
+Cadre
+    ONG Bénin Excellence
+            Situation Géographique
+    Laboratoire d'IA 
+Matériels   
+    Matériel de calcul
+    Matériel de collecte
+    Logiciels et environnement de développement
+Données
+        HIT-UAV
+        POP
+        SAVI
+            Région dans laquelle la collecte à pris place
+            Protocole de Collecte
+            Images
+            Métadonnées
+Méthodes
+    Préparation des données
+        Annotation
+        Pré-traitement
+        Constitution des ensembles
+    Modèle de Vision 
+        Modèles références
+            Yolov8s
+            Cascade R-CNN
+        Intégration de modules d'attention
+        Architecture MultiModal
+        Transfert Learning
+    Algorithme de Planification de la Trajectoire
+        Boustrophedon Cellular Decomposition
+        Spanning Tree Coverage
+        Random Walk - Levy Flight
+    Architecture d'Intégration
+
+
+
+
+            
